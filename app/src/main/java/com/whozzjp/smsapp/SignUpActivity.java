@@ -11,7 +11,9 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -26,6 +28,7 @@ import com.google.android.material.textfield.TextInputLayout;
 import com.google.android.material.textview.MaterialTextView;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -42,7 +45,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     TextInputEditText name, address, mail, mobile, pass, cnfPass;
     MaterialButton signupBtn;
-
+    private FirebaseAuth auth;
 
 
 
@@ -186,6 +189,7 @@ public class SignUpActivity extends AppCompatActivity {
                                                             if (task.isSuccessful()) {
                                                                 User ud=new User(mail.getText().toString(),pass.getText().toString());
                                                                 String id=task.getResult().getUser().getUid();
+                                                                String currentDeviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
 
                                                                 // reference.child(id).setValue(ud);
 
@@ -196,7 +200,7 @@ public class SignUpActivity extends AppCompatActivity {
                                                                 root.child(id).child("Email").setValue(mail.getText().toString());
                                                                 root.child(id).child("Mobile No").setValue(mobile.getText().toString());
                                                                 root.child(id).child("Password").setValue(pass.getText().toString());
-                                                                root.child(id).child("loggedIn").setValue(false);
+                                                                root.child(id).child("deviceID").setValue(currentDeviceID);
                                                                // root.child(id).child("Referal Id").setValue(referalId.getText().toString());
                                                                // root.child(id).child("Link").setValue("https://b2bdigitalworld.com/c/");
 
@@ -309,6 +313,16 @@ public class SignUpActivity extends AppCompatActivity {
         IntentFilter filter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION ) ;
         registerReceiver(check, filter)  ;
         super.onStart();
+
+       /* try {
+            FirebaseUser currentUser = auth.getCurrentUser();
+            if (currentUser != null) {
+                startActivity(new Intent(SignUpActivity.this, MainActivity.class));
+                finish();
+            }
+        }catch (Exception e){
+            Log.d("Firebase",e.getMessage());
+        }*/
 
     }
 
