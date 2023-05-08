@@ -23,9 +23,7 @@
                 android:layout_marginTop="20dp"
                 android:layout_marginEnd="20dp"
                 android:layout_marginBottom="20dp"
-                android:cardBackgroundColor="@color/white"
-                android:cardCornerRadius="15dp"
-                android:cardElevation="5dp"
+
                 android:strokeColor="@color/green"
                 android:paddingVertical="10dp">
 
@@ -61,8 +59,8 @@
                             android:elevation="5dp"
                             android:hint="Full name"
                             android:textColorHint="@color/green"
-                            android:boxStrokeColor="@color/blue"
-                            android:startIconTint="@color/blue">
+
+                            >
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/user_name"
