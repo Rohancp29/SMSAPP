@@ -235,7 +235,6 @@
                             android:textSize="20sp"
                             app:cornerRadius="10dp"
                             app:elevation="5dp"
-
                             app:iconGravity="textStart"
                             app:iconTint="@color/white" />
 

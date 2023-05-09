@@ -1,5 +1,7 @@
 package com.whozzjp.smsapp;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -14,6 +16,7 @@ import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
@@ -21,6 +24,8 @@ import android.view.View;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -35,6 +40,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.HashMap;
+
+import io.grpc.internal.LogExceptionRunnable;
 
 public class LoginActivity extends AppCompatActivity {
     TextInputEditText email, pass;
@@ -42,16 +53,25 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth auth;
     MaterialTextView forget_password,nothaveaccount;
     CheckInternet check = new CheckInternet();
+    private String mydeviceId;
+    private CountDownTimer countDownTimer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
+
         email = findViewById(R.id.user_email);
         pass = findViewById(R.id.user_pass);
         signBtn = findViewById(R.id.signin);
         nothaveaccount=findViewById(R.id.signup_activity);
+
+
+        mydeviceId = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        getLoginStatus();
 
         // Initialize FirebaseApp
         FirebaseApp.initializeApp(this);
@@ -91,6 +111,31 @@ public class LoginActivity extends AppCompatActivity {
                 String emailET = email.getText().toString().trim();
                 String passET = pass.getText().toString().trim();
 
+
+              /*  auth.signInWithEmailAndPassword(emailET,passET)
+                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                            @Override
+                            public void onSuccess(AuthResult authResult) {
+                                String username = emailET.split("@")[0];
+                                HashMap<String,String> hashMap = new HashMap<>();
+                                hashMap.put("deviceId",mydeviceId);
+                                FirebaseFirestore.getInstance().collection("Users")
+                                        .document(username)
+                                        .set(hashMap)
+                                        .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void unused) {
+                                                Log.e(TAG,"onSuccess: ");
+                                            }
+                                        })
+                                        .addOnFailureListener(new OnFailureListener() {
+                                            @Override
+                                            public void onFailure(@NonNull Exception e) {
+                                                Toast.makeText(LoginActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        });*/
                 if (email.getText().toString().isEmpty()) {
                     email.setError("Enter email");
                 } else if (pass.getText().toString().isEmpty()) {
@@ -150,14 +195,95 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void getLoginStatus() {
+        countDownTimer = new CountDownTimer(30000, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                Log.e(TAG, "onTick: " + 1 / 1000);
+            }
+
+            @Override
+            public void onFinish() {
+                try {
+
+
+                    countDownTimer.start();
+                    String emailET = email.getText().toString().trim();
+                    String username = emailET.substring(0,3);
+                    FirebaseFirestore.getInstance().collection("Users") // Fix collection name
+                            .document(username)
+                            .get()
+                            .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                @Override
+                                public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                    String deviceId = documentSnapshot.get("deviceId").toString();
+                                    if (!deviceId.equals(mydeviceId)) {
+                                        FirebaseAuth.getInstance().signOut();
+                                        showAlert("Logging out");
+                                    }
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    Toast.makeText(LoginActivity.this, "" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                }catch (Exception e){
+                    Log.d("username",e.getMessage());
+                }
+            }
+        }.start();
+    }
+
+
+    private void showAlert(String logging_out) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Logout")
+                .setMessage(logging_out)
+                .setCancelable(false)
+                .show();
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
     //Firebase login
 
     private void loginuser(String email, String password) {
-        auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+
+        auth.signInWithEmailAndPassword(email,password)
+
+                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                    @Override
+                    public void onSuccess(AuthResult authResult) {
+                        String username = email.substring(0,3);
+                        HashMap<String,String> hashMap = new HashMap<>();
+                        hashMap.put("deviceId",mydeviceId);
+                        FirebaseFirestore.getInstance().collection("Users")
+                                .document(username)
+                                .set(hashMap)
+                                .addOnSuccessListener(new OnSuccessListener<Void>() {
+                                    @Override
+                                    public void onSuccess(Void unused) {
+                                        Log.e(TAG,"onSuccess: ");
+                                        startActivity(new Intent(getApplicationContext(),MainActivity.class));
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        Toast.makeText(LoginActivity.this, ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    }
+                });
+
+       /* auth.signInWithEmailAndPassword(email, password).addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
                 if (task.isSuccessful()) {
                     FirebaseUser user = auth.getCurrentUser();
+
                     String DeviceID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
                     try{
                     if (user != null) {
@@ -227,7 +353,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
 
-        });
+        });*/
 
     }
 
@@ -238,13 +364,13 @@ public class LoginActivity extends AppCompatActivity {
         registerReceiver(check, filter);
         super.onStart();
         // Check the login flag when the app is reopened
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
+        /*SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(LoginActivity.this);
         boolean loggedInDevice = preferences.getBoolean("loggedInDevice", false);
         if (loggedInDevice) {
 
             startActivity(new Intent(getApplicationContext(), MainActivity.class));
             finish();
-        }
+        }*/
     }
 
 
