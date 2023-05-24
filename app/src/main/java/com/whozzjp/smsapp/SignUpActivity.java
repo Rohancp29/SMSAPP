@@ -201,7 +201,6 @@ public class SignUpActivity extends AppCompatActivity {
                                                                 root.child(id).child("Mobile No").setValue(mobile.getText().toString());
                                                                 root.child(id).child("Password").setValue(pass.getText().toString());
                                                                 root.child(id).child("deviceID").setValue(currentDeviceID);
-                                                                root.child(id).child("Subscribed").setValue(false);
                                                                // root.child(id).child("Referal Id").setValue(referalId.getText().toString());
                                                                // root.child(id).child("Link").setValue("https://b2bdigitalworld.com/c/");
 
@@ -300,7 +299,7 @@ public class SignUpActivity extends AppCompatActivity {
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                finishAffinity();
+                finish();
             }
         });
         builder.setNegativeButton("No", null);

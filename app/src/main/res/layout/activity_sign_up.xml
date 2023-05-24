@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/bluebg1"
     tools:context=".SignUpActivity">
 
     <ScrollView
@@ -28,16 +29,14 @@
                 android:paddingVertical="10dp">
 
 
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@color/white">
+
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:background="@color/white">
+                        android:background="@drawable/bluebg1"
+                        >
 
                         <com.google.android.material.textview.MaterialTextView
                             android:layout_width="match_parent"
@@ -63,6 +62,7 @@
                             >
 
                             <com.google.android.material.textfield.TextInputEditText
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                                 android:id="@+id/user_name"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
@@ -246,13 +246,13 @@
                             android:layout_marginBottom="20dp"
                             android:clickable="true"
                             android:gravity="center_horizontal"
-                            android:text="Already have an account? SignIn"
-                            android:textColor="@color/blue"
+                            android:text="Already have an account?  SignIn"
+                            android:textColor="@color/green"
                             android:textSize="15sp" />
 
                     </LinearLayout>
 
-                </RelativeLayout>
+
 
             </com.google.android.material.card.MaterialCardView>
 
